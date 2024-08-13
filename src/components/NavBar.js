@@ -61,7 +61,7 @@ function NavBar() {
           to="/admin"
           className="text-white hover:underline"
         >
-          Panel de Administración
+          Panel de Administración de CP
         </Link>
       </div>
 
