@@ -10,6 +10,7 @@ import LoginComponent from "./components/LoginComponent";
 import CotizacionComponent from "./components/CotizacionComponent";
 import AdminPanel from "./components/AdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Cotizador from "./components/Cotizador";
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
             path="/cotizacion"
             element={
               <ProtectedRoute>
-                <CotizacionComponent />
+                <Cotizador />
               </ProtectedRoute>
             }
           />
