@@ -1,48 +1,35 @@
 // src/App.js
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
-import LoginComponent from "./components/LoginComponent";
-import CotizacionComponent from "./components/CotizacionComponent";
-import AdminPanel from "./components/AdminPanel";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Cotizador from "./components/Cotizador";
+import AdminPanel from "./components/AdminPanel";
+import Cotizaciones from "./components/CotizacionComponent";
+import DetalleCotizacion from "./components/DetalleCotizacion";
+import NavBar from "./components/NavBar";
 
 function App() {
   return (
     <Router>
-      <div>
-        <Routes>
-          <Route
-            path="/"
-            element={<Navigate to="/login" />}
-          />
-          <Route
-            path="/login"
-            element={<LoginComponent />}
-          />
-          <Route
-            path="/cotizacion"
-            element={
-              <ProtectedRoute>
-                <Cotizador />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminPanel />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </div>
+      <NavBar />
+      <Routes>
+        <Route
+          path="/cotizador"
+          element={<Cotizador />}
+        />
+        <Route
+          path="/admin"
+          element={<AdminPanel />}
+        />
+        <Route
+          path="/cotizaciones"
+          element={<Cotizaciones />}
+        />
+        <Route
+          path="/cotizaciones/:id"
+          element={<DetalleCotizacion />}
+        />{" "}
+        {/* Ruta para el detalle */}
+      </Routes>
     </Router>
   );
 }
