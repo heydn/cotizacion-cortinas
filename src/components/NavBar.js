@@ -7,6 +7,7 @@ function NavBar() {
     <nav className="bg-gray-800 p-4">
       <div className="flex justify-between items-center">
         <div className="text-white text-lg">
+          {/* Enlaces del menú */}
           <Link
             to="/cotizador"
             className="mr-4"
@@ -14,18 +15,16 @@ function NavBar() {
             Cotizador
           </Link>
           <Link
+            to="/cotizaciones"
+            className="mr-4"
+          >
+            Cotizaciones
+          </Link>
+          <Link
             to="/admin"
             className="mr-4"
           >
             Admin
-          </Link>
-          <Link
-            to="/cotizaciones"
-            className="mr-4"
-          >
-            {" "}
-            {/* Agregamos el enlace a cotizaciones */}
-            Cotizaciones
           </Link>
         </div>
       </div>

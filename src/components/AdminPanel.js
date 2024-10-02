@@ -9,7 +9,6 @@ import {
   doc,
   getDocs,
 } from "firebase/firestore";
-import NavBar from "./NavBar";
 
 function AdminPanel() {
   const [activeTab, setActiveTab] = useState("Productos");
@@ -246,7 +245,6 @@ function AdminPanel() {
 
   return (
     <div>
-      <NavBar />
       <div className="p-6">
         <h2 className="text-2xl mb-4">Panel de Administración</h2>
 
