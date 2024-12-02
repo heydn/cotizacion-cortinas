@@ -9,263 +9,231 @@ import {
   doc,
   getDocs,
 } from "firebase/firestore";
+import NavBar from "./NavBar";
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("Productos");
   const [productos, setProductos] = useState([]);
-  const [newItemName, setNewItemName] = useState("");
-  const [newItemPrice, setNewItemPrice] = useState("");
-  const [editingItem, setEditingItem] = useState(null);
+  const [materiales, setMateriales] = useState({});
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductPrice, setNewProductPrice] = useState("");
+  const [editingProduct, setEditingProduct] = useState(null);
   const [editingName, setEditingName] = useState("");
   const [editingPrice, setEditingPrice] = useState("");
 
-  // Estado de materiales, separado por producto
-  const [materiales, setMateriales] = useState({});
-  const [newMaterial, setNewMaterial] = useState({});
+  const [newMaterialName, setNewMaterialName] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
 
-  // Función para obtener productos
+  // Obtener productos y materiales desde Firestore
   const fetchProductos = async () => {
-    const productosCollection = await getDocs(collection(db, "productos"));
-    const productosList = productosCollection.docs.map((doc) => ({
+    const productosRef = await getDocs(collection(db, "productos"));
+    const productosList = productosRef.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-
     setProductos(productosList);
 
-    // Cargar subcolecciones de materiales por producto
+    // Obtener materiales para cada producto
+    const materialesObj = {};
     for (const producto of productosList) {
-      const materialesCollection = await getDocs(
+      const materialesRef = await getDocs(
         collection(db, "productos", producto.id, "materiales")
       );
-      setMateriales((prevState) => ({
-        ...prevState,
-        [producto.id]: materialesCollection.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })),
+      materialesObj[producto.id] = materialesRef.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
       }));
     }
+    setMateriales(materialesObj);
   };
 
   useEffect(() => {
     fetchProductos();
   }, []);
 
-  // Agregar producto
+  // Agregar un nuevo producto
   const handleAddProduct = async () => {
-    if (newItemName.trim() === "" || newItemPrice.trim() === "") return;
-    await addDoc(collection(db, "productos"), {
-      name: newItemName,
-      price: parseFloat(newItemPrice),
+    if (!newProductName.trim() || !newProductPrice.trim()) return;
+    const newProduct = await addDoc(collection(db, "productos"), {
+      name: newProductName,
+      price: parseFloat(newProductPrice),
     });
-    setNewItemName("");
-    setNewItemPrice("");
-    fetchProductos(); // Refrescar la lista
+    setNewProductName("");
+    setNewProductPrice("");
+    fetchProductos(); // Actualizar la lista de productos
   };
 
-  // Editar producto
+  // Actualizar un producto
   const handleUpdateProduct = async (id) => {
     const productRef = doc(db, "productos", id);
     await updateDoc(productRef, {
       name: editingName,
       price: parseFloat(editingPrice),
     });
-    setEditingItem(null);
+    setEditingProduct(null);
     setEditingName("");
     setEditingPrice("");
-    fetchProductos(); // Refrescar la lista
+    fetchProductos();
   };
 
-  // Eliminar producto
+  // Eliminar un producto
   const handleDeleteProduct = async (id) => {
     const productRef = doc(db, "productos", id);
     await deleteDoc(productRef);
-    fetchProductos(); // Refrescar la lista
+    fetchProductos();
   };
 
-  // Agregar material a un producto
-  const handleAddMaterial = async (productId) => {
-    if (newMaterial[productId]?.trim() === "") return;
-
-    await addDoc(collection(db, "productos", productId, "materiales"), {
-      name: newMaterial[productId],
+  // Agregar un material a un producto
+  const handleAddMaterial = async () => {
+    if (!newMaterialName.trim() || !selectedProductId) return;
+    await addDoc(collection(db, "productos", selectedProductId, "materiales"), {
+      name: newMaterialName,
     });
-
-    setNewMaterial((prevState) => ({
-      ...prevState,
-      [productId]: "", // Limpiar el campo de material
-    }));
-
-    fetchProductos(); // Recargar la lista de productos con materiales
+    setNewMaterialName("");
+    setSelectedProductId("");
+    fetchProductos();
   };
-
-  // Eliminar material
-  const handleDeleteMaterial = async (productId, materialId) => {
-    await deleteDoc(doc(db, "productos", productId, "materiales", materialId));
-    fetchProductos(); // Recargar la lista de productos con materiales
-  };
-
-  // Manejar el cambio de entrada del material por producto
-  const handleMaterialChange = (productId, value) => {
-    setNewMaterial((prevState) => ({
-      ...prevState,
-      [productId]: value,
-    }));
-  };
-
-  const renderSection = (title, items, collectionName, setter) => (
-    <div className="mb-8">
-      <h3 className="text-xl">{title}</h3>
-      <div className="mb-4">
-        <input
-          type="text"
-          value={newItemName}
-          onChange={(e) => setNewItemName(e.target.value)}
-          placeholder={`Nombre de ${title.toLowerCase()}`}
-          className="border p-2 mr-2"
-        />
-        <input
-          type="number"
-          value={newItemPrice}
-          onChange={(e) => setNewItemPrice(e.target.value)}
-          placeholder="Precio"
-          className="border p-2 mr-2"
-        />
-        <button
-          onClick={handleAddProduct}
-          className="bg-green-500 text-white p-2 rounded"
-        >
-          Agregar
-        </button>
-      </div>
-
-      <div className="mt-4">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="mb-4"
-          >
-            {editingItem === item.id ? (
-              <>
-                {/* Modo edición de producto */}
-                <input
-                  type="text"
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  className="border p-2 mr-2"
-                />
-                <input
-                  type="number"
-                  value={editingPrice}
-                  onChange={(e) => setEditingPrice(e.target.value)}
-                  className="border p-2 mr-2"
-                />
-                <button
-                  onClick={() => handleUpdateProduct(item.id)}
-                  className="bg-blue-500 text-white p-2 rounded"
-                >
-                  Guardar
-                </button>
-                <button
-                  onClick={() => setEditingItem(null)}
-                  className="bg-gray-500 text-white p-2 ml-2 rounded"
-                >
-                  Cancelar
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Vista del producto */}
-                <span>
-                  {item.name} - ${item.price}
-                </span>
-                <button
-                  onClick={() => {
-                    setEditingItem(item.id);
-                    setEditingName(item.name);
-                    setEditingPrice(item.price);
-                  }}
-                  className="bg-yellow-500 text-white p-2 ml-2 rounded"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDeleteProduct(item.id)}
-                  className="bg-red-500 text-white p-2 ml-2 rounded"
-                >
-                  Eliminar
-                </button>
-
-                {/* Campo y botón para agregar material al producto */}
-                <div className="mt-2">
-                  <input
-                    type="text"
-                    value={newMaterial[item.id] || ""}
-                    onChange={(e) =>
-                      handleMaterialChange(item.id, e.target.value)
-                    }
-                    placeholder="Agregar material"
-                    className="border p-2 mr-2"
-                  />
-                  <button
-                    onClick={() => handleAddMaterial(item.id)}
-                    className="bg-blue-500 text-white p-2 rounded"
-                  >
-                    Agregar Material
-                  </button>
-                </div>
-
-                {/* Lista de materiales */}
-                <div className="mt-2">
-                  {materiales[item.id]?.map((material) => (
-                    <div
-                      key={material.id}
-                      className="mt-2"
-                    >
-                      <span>{material.name}</span>
-                      <button
-                        onClick={() =>
-                          handleDeleteMaterial(item.id, material.id)
-                        }
-                        className="bg-red-500 text-white p-2 ml-2 rounded"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <div>
+      {/* <NavBar /> */}
       <div className="p-6">
         <h2 className="text-2xl mb-4">Panel de Administración</h2>
 
-        {/* Tabs */}
+        {/* Formulario para agregar un producto */}
         <div className="mb-6">
-          {["Productos"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`p-2 ${
-                activeTab === tab ? "bg-gray-300" : "bg-gray-100"
-              } hover:bg-gray-200 rounded mr-2`}
-            >
-              {tab}
-            </button>
-          ))}
+          <h3 className="text-xl mb-2">Agregar Producto</h3>
+          <input
+            type="text"
+            placeholder="Nombre del Producto"
+            value={newProductName}
+            onChange={(e) => setNewProductName(e.target.value)}
+            className="border p-2 mr-2"
+          />
+          <input
+            type="number"
+            placeholder="Precio"
+            value={newProductPrice}
+            onChange={(e) => setNewProductPrice(e.target.value)}
+            className="border p-2 mr-2"
+          />
+          <button
+            onClick={handleAddProduct}
+            className="bg-green-500 text-white p-2 rounded"
+          >
+            Agregar Producto
+          </button>
         </div>
 
-        {/* Contenido del Tab */}
-        {activeTab === "Productos" &&
-          renderSection("Productos", productos, "productos", setProductos)}
+        {/* Tabla responsiva para productos */}
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-300">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2">Nombre</th>
+                <th className="border px-4 py-2">Precio</th>
+                <th className="border px-4 py-2">Materiales</th>
+                <th className="border px-4 py-2">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productos.map((producto) => (
+                <tr key={producto.id}>
+                  <td className="border px-4 py-2">
+                    {editingProduct === producto.id ? (
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="border p-2"
+                      />
+                    ) : (
+                      producto.name
+                    )}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {editingProduct === producto.id ? (
+                      <input
+                        type="number"
+                        value={editingPrice}
+                        onChange={(e) => setEditingPrice(e.target.value)}
+                        className="border p-2"
+                      />
+                    ) : (
+                      `$${producto.price.toFixed(2)}`
+                    )}
+                  </td>
+                  <td className="border px-4 py-2">
+                    <ul>
+                      {materiales[producto.id]?.map((material) => (
+                        <li key={material.id}>{material.name}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="border px-4 py-2">
+                    {editingProduct === producto.id ? (
+                      <button
+                        onClick={() => handleUpdateProduct(producto.id)}
+                        className="bg-blue-500 text-white p-2 rounded"
+                      >
+                        Guardar
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingProduct(producto.id);
+                          setEditingName(producto.name);
+                          setEditingPrice(producto.price);
+                        }}
+                        className="bg-yellow-500 text-white p-2 mr-2 rounded"
+                      >
+                        Editar
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteProduct(producto.id)}
+                      className="bg-red-500 text-white p-2 rounded"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Formulario para agregar material */}
+        <div className="mt-6">
+          <h3 className="text-xl mb-2">Agregar Material a Producto</h3>
+          <select
+            value={selectedProductId}
+            onChange={(e) => setSelectedProductId(e.target.value)}
+            className="border p-2 mr-2"
+          >
+            <option value="">Seleccionar Producto</option>
+            {productos.map((producto) => (
+              <option
+                key={producto.id}
+                value={producto.id}
+              >
+                {producto.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="Nombre del Material"
+            value={newMaterialName}
+            onChange={(e) => setNewMaterialName(e.target.value)}
+            className="border p-2 mr-2"
+          />
+          <button
+            onClick={handleAddMaterial}
+            className="bg-green-500 text-white p-2 rounded"
+          >
+            Agregar Material
+          </button>
+        </div>
       </div>
     </div>
   );

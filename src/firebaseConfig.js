@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA18IEwg8YDa2xBUhe_-iPokPBaMUNnGoQ",
-  authDomain: "cotizacion-cortinas.firebaseapp.com",
-  projectId: "cotizacion-cortinas",
-  storageBucket: "cotizacion-cortinas.appspot.com",
-  messagingSenderId: "295276276691",
-  appId: "1:295276276691:web:1d4fbc00268676b5eb5d26",
+  apiKey: "AIzaSyDazOIJdIkxpnfdndLxScDfaPrYEAOTMLw",
+  authDomain: "cotizador2023-f241e.firebaseapp.com",
+  projectId: "cotizador2023-f241e",
+  storageBucket: "cotizador2023-f241e.firebasestorage.app",
+  messagingSenderId: "837017709571",
+  appId: "1:837017709571:web:0c7fad67b7af4088cb7236",
 };
 
 // Inicializar Firebase

@@ -1,6 +1,8 @@
 // src/App.js
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import LoginComponent from "./components/LoginComponent";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Cotizador from "./components/Cotizador"; // Componente Cotizador
 import Cotizaciones from "./components/Cotizaciones"; // Mantenedor de cotizaciones
 import AdminPanel from "./components/AdminPanel"; // Admin de productos
@@ -12,27 +14,43 @@ function App() {
     <Router>
       <NavBar /> {/* Menú de navegación */}
       <Routes>
-        {/* Rutas para los componentes */}
+        <Route
+          path="/"
+          element={<LoginComponent />}
+        />{" "}
+        {/* Inicio de sesión */}
         <Route
           path="/cotizador"
-          element={<Cotizador />}
-        />{" "}
-        {/* Cotizador */}
+          element={
+            <ProtectedRoute>
+              <Cotizador />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/cotizaciones"
-          element={<Cotizaciones />}
-        />{" "}
-        {/* Cotizaciones */}
-        <Route
-          path="/admin"
-          element={<AdminPanel />}
-        />{" "}
-        {/* Admin */}
+          element={
+            <ProtectedRoute>
+              <Cotizaciones />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/cotizaciones/:id"
-          element={<DetalleCotizacion />}
-        />{" "}
-        {/* Detalle de cotización */}
+          element={
+            <ProtectedRoute>
+              <DetalleCotizacion />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

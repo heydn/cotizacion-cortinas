@@ -1,50 +1,52 @@
 // src/components/LoginComponent.js
-import { useState } from "react";
+import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 import { auth } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
 function LoginComponent() {
-  const [email, setEmail] = useState("@cortinaspuertomontt.cl");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/cotizacion");
+      navigate("/cotizador"); // Redirigir al cotizador
     } catch (err) {
-      setError("Error en la autenticación. Inténtalo de nuevo.");
+      setError("Error al iniciar sesión: " + err.message);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex justify-center items-center h-screen">
       <form
         onSubmit={handleLogin}
         className="bg-white p-6 rounded shadow-md"
       >
-        <h2 className="text-2xl mb-4">Iniciar Sesión</h2>
+        <h2 className="text-xl mb-4">Iniciar Sesión</h2>
+        {error && <p className="text-red-500">{error}</p>}
         <input
           type="email"
+          placeholder="Correo Electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Correo electrónico"
-          className="mb-2 p-2 border"
+          className="border p-2 w-full mb-4"
+          required
         />
         <input
           type="password"
+          placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Contraseña"
-          className="mb-2 p-2 border"
+          className="border p-2 w-full mb-4"
+          required
         />
-        {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
-          className="bg-blue-500 text-white p-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Iniciar Sesión
         </button>

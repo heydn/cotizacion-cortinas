@@ -1,31 +1,26 @@
 // src/components/ProtectedRoute.js
-import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { Navigate } from "react-router-dom";
 
-const ProtectedRoute = ({ children }) => {
-  const [user, setUser] = useState(null); // Estado para almacenar el usuario actual
-  const [loading, setLoading] = useState(true); // Estado para manejar la carga
+function ProtectedRoute({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false); // Deja de cargar cuando se obtiene el usuario
+      setLoading(false);
     });
-
-    // Limpiar el listener al desmontar el componente
     return () => unsubscribe();
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>; // Mostrar un indicador de carga mientras se obtiene el usuario
+    return <div>Cargando...</div>;
   }
 
-  if (!user) {
-    return <Navigate to="/login" />; // Redirigir al login si no hay usuario autenticado
-  }
-
-  return children; // Renderizar los hijos (el componente protegido) si el usuario está autenticado
-};
+  return user ? children : <Navigate to="/" />;
+}
 
 export default ProtectedRoute;
